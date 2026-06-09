@@ -95,3 +95,25 @@ body {
   }
 }
 
+/* ── Marquees ─────────────────────────────────────────────────────────────── */
+/* Defined here (not in styled-jsx) so the keyframes are always present — the
+   inline `animation:` on each marquee track references these by name. */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-25%); }
+}
+@keyframes marquee-left {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes marquee-right {
+  0%   { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [style*="marquee-left"],
+  [style*="marquee-right"] {
+    animation: none !important;
+  }
+}
+

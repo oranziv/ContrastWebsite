@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Logotype from "./Logotype";
-import { setLogoOrigin, shouldSkipIntro, markSoftNavToHome } from "@/lib/introState";
+import { setLogoOrigin, shouldSkipIntro } from "@/lib/introState";
 
 const navLinks = [
   { label: "The Hero Framework", href: "/#framework" },
@@ -14,22 +14,38 @@ const navLinks = [
   { label: "Careers", href: "/careers" },
 ];
 
-function handleNavClick(href: string, e: React.MouseEvent) {
+export function handleNavClick(
+  href: string,
+  e: React.MouseEvent,
+  router: ReturnType<typeof useRouter>,
+) {
+  // Let the browser handle modifier-clicks (open in new tab, etc.)
+  if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+
   const hash = href.startsWith("/#") ? href.slice(2) : href.startsWith("#") ? href.slice(1) : null;
-  if (!hash) return;
-  e.preventDefault();
-  const el = document.getElementById(hash);
-  if (el) {
-    el.scrollIntoView({ behavior: "smooth" });
-  } else {
-    markSoftNavToHome();
-    window.location.href = href;
+
+  // Same-page section link → smooth scroll, no navigation.
+  if (hash) {
+    const el = document.getElementById(hash);
+    if (el) {
+      e.preventDefault();
+      el.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
   }
+
+  // Internal route / cross-page section link → client-side navigation so the App
+  // Router keeps its history consistent (a hard window.location nav here left a
+  // blank page on browser Back). The homepage's intro animation plays on arrival
+  // and masks its load — so we intentionally do NOT skip it here.
+  e.preventDefault();
+  router.push(href);
 }
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   const introDelay =
     pathname === "/" && typeof window !== "undefined" && !shouldSkipIntro()
@@ -37,6 +53,13 @@ export default function Header() {
       : 0;
 
   const logoRef = useRef<HTMLAnchorElement>(null);
+
+  // Prefetch nav destinations so client-side transitions (e.g. logo → home)
+  // feel instant in production. No-op for the route you're already on.
+  useEffect(() => {
+    const routes = new Set(navLinks.map((l) => (l.href.startsWith("/#") ? "/" : l.href)));
+    routes.forEach((r) => router.prefetch(r));
+  }, [router]);
 
   useEffect(() => {
     const measure = () => {
@@ -96,9 +119,13 @@ export default function Header() {
               height:         68,
             }}
           >
+            {/* Client-side nav (keeps App Router history consistent → no blank
+                page on browser Back). href kept for accessibility / fallback. */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a
               ref={logoRef}
               href="/"
+              onClick={(e) => handleNavClick("/", e, router)}
               aria-label="Contrast home"
               style={{ display: "block", textDecoration: "none" }}
             >
@@ -111,7 +138,7 @@ export default function Header() {
                 <a
                   key={link.href}
                   href={link.href}
-                  onClick={(e) => handleNavClick(link.href, e)}
+                  onClick={(e) => handleNavClick(link.href, e, router)}
                   style={{
                     fontSize:       14,
                     fontWeight:     400,
@@ -244,7 +271,7 @@ export default function Header() {
                   <motion.a
                     key={link.href}
                     href={link.href}
-                    onClick={(e) => { setMobileOpen(false); handleNavClick(link.href, e); }}
+                    onClick={(e) => { setMobileOpen(false); handleNavClick(link.href, e, router); }}
                     initial={{ opacity: 0, y: -6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{

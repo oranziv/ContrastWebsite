@@ -48,6 +48,7 @@ function StatCard({ stat, delay }: { stat: Stat; delay: number }) {
     const el = ref.current;
     if (!el) return;
 
+    let raf = 0;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting || animStarted.current) return;
@@ -61,15 +62,15 @@ function StatCard({ stat, delay }: { stat: Stat; delay: number }) {
           const progress = Math.min(elapsed / duration, 1);
           const eased = 1 - Math.pow(1 - progress, 3);
           setCount(Math.round(eased * stat.value));
-          if (progress < 1) requestAnimationFrame(tick);
+          if (progress < 1) raf = requestAnimationFrame(tick);
         };
-        requestAnimationFrame(tick);
+        raf = requestAnimationFrame(tick);
       },
       { threshold: 0.1 }
     );
 
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); cancelAnimationFrame(raf); };
   }, [stat.value]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {

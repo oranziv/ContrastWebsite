@@ -1,6 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import Logotype from "./Logotype";
+import { handleNavClick } from "./Header";
 
 // Arrow icon used in "Book a Call" button
 function ArrowIcon() {
@@ -45,6 +47,7 @@ function SocialIcons() {
 }
 
 export default function Footer() {
+  const router = useRouter();
   return (
     <footer
       style={{
@@ -66,8 +69,10 @@ export default function Footer() {
 
           {/* Row 1: Logo (left) + Social icons (right) */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            {/* Logo, CONTRAST. wordmark */}
-            <a href="/" aria-label="Contrast home" style={{ display: "block", textDecoration: "none" }}>
+            {/* Logo, CONTRAST. wordmark — client-side nav (consistent App Router
+                history → no blank page on browser Back). */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a href="/" onClick={(e) => handleNavClick("/", e, router)} aria-label="Contrast home" style={{ display: "block", textDecoration: "none" }}>
               <Logotype width={156} />
             </a>
 
@@ -80,15 +85,16 @@ export default function Footer() {
             {/* Nav */}
             <nav className="footer-nav" style={{ display: "flex", alignItems: "center", gap: 24 }}>
               {[
-                { label: "The Hero Framework", href: "#framework" },
-                { label: "Selected Work", href: "#work" },
-                { label: "Our services", href: "#services" },
-                { label: "Testimonials", href: "#testimonials" },
+                { label: "The Hero Framework", href: "/#framework" },
+                { label: "Selected Work", href: "/#work" },
+                { label: "Our services", href: "/#services" },
+                { label: "Testimonials", href: "/#testimonials" },
                 { label: "Careers", href: "/careers" },
               ].map(({ label, href }) => (
                 <a
                   key={label}
                   href={href}
+                  onClick={(e) => handleNavClick(href, e, router)}
                   style={{
                     fontFamily: "var(--font-urbanist), sans-serif",
                     fontWeight: 500,

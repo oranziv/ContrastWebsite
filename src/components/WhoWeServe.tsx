@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 
 const ACCENT = "#d90cb7";
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -550,22 +551,17 @@ function CardItem({ card, i, expanded, setExpanded, hoveredIdx, setHoveredIdx, i
 export default function WhoWeServe() {
   const [expanded,        setExpanded]        = useState<number | null>(null);
   const [hoveredIdx,      setHoveredIdx]      = useState<number | null>(null);
-  const [isMobile,        setIsMobile]        = useState(false);
+  const isMobile = useMediaQuery("(max-width: 900px)");
   const [mobileActiveIdx, setMobileActiveIdx] = useState<number | null>(null);
   const cardDomRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 900px)");
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
 
   // On mobile: track which card's center is closest to viewport center — guarantees
   // exactly one active card, unlike IntersectionObserver which can fire on multiple.
   useEffect(() => {
     if (!isMobile) {
+      // Correct use of an effect: clear the mobile-only active card when leaving
+      // the mobile breakpoint (no-op on desktop, already null).
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMobileActiveIdx(null);
       return;
     }

@@ -1,8 +1,9 @@
 "use client";
 
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 
 const ACCENT = "#d90cb7";
 
@@ -114,9 +115,10 @@ function Panel({
     offset: ["start end", "end start"],
   });
 
-  // Image drifts upward; oversized (top -22% / height 144%) so the travel never
-  // exposes an edge. Text/button move a bit more for a foreground feel — the gap
-  // between the two layers is what reads as depth.
+  // Image drifts upward; oversized (top -26% / height 152%) so the ±120px travel
+  // keeps a comfortable margin even at the 560px mobile floor and never exposes an
+  // edge. Text/button move a bit more for a foreground feel — the gap between the
+  // two layers is what reads as depth.
   const imageY = useTransform(scrollYProgress, [0, 1], [120, -120]);
   const textY = useTransform(scrollYProgress, [0, 1], [160, -160]);
 
@@ -130,10 +132,12 @@ function Panel({
     <motion.img
       src={project.image}
       alt={project.client}
+      loading="lazy"
+      decoding="async"
       style={{
         position: "absolute",
-        top: "-22%", left: 0,
-        width: "100%", height: "144%",
+        top: "-26%", left: 0,
+        width: "100%", height: "152%",
         objectFit: "cover", objectPosition: "center",
         display: "block",
         y: imageY,
@@ -323,15 +327,7 @@ function Panel({
 }
 
 export default function SelectedWorkSection() {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 768px)");
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const N = projects.length;
 

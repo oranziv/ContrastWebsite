@@ -1,7 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence, useInView } from "framer-motion";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 
 const YT_ID = "nyS3mZk7K6k";
 
@@ -449,15 +450,7 @@ function HeroFrameworkCard({ delay, isMobile }: { delay: number; isMobile: boole
 
 // ── Section ───────────────────────────────────────────────────────────────────
 export default function MethodSection() {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 768px)");
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
     <section id="framework" className="method-section" style={{ padding: "120px 40px", background: "#0a0a0a" }}>

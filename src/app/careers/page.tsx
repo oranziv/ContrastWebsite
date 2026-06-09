@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -153,6 +153,7 @@ function HeroStatCard({ stat, startDelay }: { stat: typeof heroStats[0]; startDe
   const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
+    let raf = 0;
     const t = setTimeout(() => {
       const duration = 1400;
       const start = performance.now();
@@ -160,11 +161,11 @@ function HeroStatCard({ stat, startDelay }: { stat: typeof heroStats[0]; startDe
         const progress = Math.min((now - start) / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
         setCount(Math.round(eased * stat.value));
-        if (progress < 1) requestAnimationFrame(tick);
+        if (progress < 1) raf = requestAnimationFrame(tick);
       };
-      requestAnimationFrame(tick);
+      raf = requestAnimationFrame(tick);
     }, startDelay);
-    return () => clearTimeout(t);
+    return () => { clearTimeout(t); cancelAnimationFrame(raf); };
   }, [stat.value, startDelay]);
 
   return (
@@ -453,6 +454,13 @@ function RoleCard({ role, i }: { role: typeof roles[0]; i: number }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CareersPage() {
+  // Scroll handling is set to "manual" globally (ScrollToTop), so client-side
+  // navigations don't auto-scroll. Reset to the top before paint — same as the
+  // work case pages — so arriving here never lands mid-page.
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, []);
+
   return (
     <main style={{ background: "#0a0a0a", color: "#ffffff", minHeight: "100vh" }}>
       <Header />

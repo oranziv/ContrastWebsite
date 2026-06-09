@@ -96,7 +96,12 @@ export default function IntroAnimation() {
     // Clear dotOrigin well after sphere has started streaming from it
     T.push(setTimeout(() => setDotOrigin(null), DONE_MS + 2500));
 
-    return () => T.forEach(clearTimeout);
+    return () => {
+      T.forEach(clearTimeout);
+      // Intro now also plays on client-side navs to home; if the user navigates
+      // away mid-intro, make sure scroll is never left locked.
+      document.body.style.overflow = "";
+    };
   }, []);
 
   return (

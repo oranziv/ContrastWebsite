@@ -87,10 +87,6 @@ export default function LogoMarquee() {
       </div>
 
       <style jsx global>{`
-        @keyframes marquee {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-25%); }
-        }
         @media (max-width: 768px) {
           .logo-marquee-section { height: 90px !important; }
         }

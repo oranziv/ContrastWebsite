@@ -23,9 +23,10 @@ const TESTIMONIALS = [
 const AUTO_INTERVAL = 6000;
 
 // ── Avatar, shows photo if it loads, initials otherwise ──────────────────────
+// Reset-on-src is handled by remounting via `key={src}` at the call site, so no
+// effect is needed here.
 function Avatar({ src, name }: { src: string; name: string }) {
   const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [src]);
 
   const initials = name
     .split(" ")
@@ -174,7 +175,7 @@ export default function TestimonialSection() {
               className="testimonial-author"
               style={{ display: "flex", alignItems: "center", gap: 52 }}
             >
-              <Avatar src={t.photo} name={t.name} />
+              <Avatar key={t.photo} src={t.photo} name={t.name} />
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 <p className="testimonial-name" style={{
                   margin: 0,

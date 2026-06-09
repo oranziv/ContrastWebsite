@@ -1,12 +1,13 @@
 "use client";
 
-import { motion, useScroll, useTransform, useInView, useMotionValue, animate } from "framer-motion";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import React, { useState, useRef, useEffect, useLayoutEffect, createContext, useContext } from "react";
 import { useRouter } from "next/navigation";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 import Header from "@/components/Header";
 import CtaBanner from "@/components/CtaBanner";
 import Footer from "@/components/Footer";
-import { markIntroPlayed, markSoftNavToHome } from "@/lib/introState";
+import { markIntroPlayed } from "@/lib/introState";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -40,15 +41,6 @@ export interface WorkCaseData {
 // time to settle on the page before any section starts revealing.
 const PageReady = createContext(false);
 const usePageReady = () => useContext(PageReady);
-
-// ─── Animation helper ─────────────────────────────────────────────────────────
-
-const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 30 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.2 },
-  transition: { duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
-});
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -146,31 +138,6 @@ function WordReveal({ text, delay = 0 }: { text: string; delay?: number }) {
       ))}
     </span>
   );
-}
-
-// AnimatedNumber, counts from 00 up to the target (e.g. "01" → "06")
-function AnimatedNumber({ value }: { value: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true });
-  const num = parseInt(value, 10);
-  const count = useMotionValue(0);
-  const [display, setDisplay] = useState("00");
-
-  useEffect(() => {
-    const unsubscribe = count.on("change", (v) => {
-      setDisplay(Math.floor(v).toString().padStart(2, "0"));
-    });
-    return unsubscribe;
-  }, [count]);
-
-  const ready = usePageReady();
-  useEffect(() => {
-    if (!isInView || !ready) return;
-    const controls = animate(count, num, { duration: 0.7, ease: "easeOut", delay: 0.1 });
-    return controls.stop;
-  }, [isInView, ready, count, num]);
-
-  return <span ref={ref}>{display}</span>;
 }
 
 function CaseCard({
@@ -280,6 +247,8 @@ function CaseCard({
             <img
               src={image}
               alt={client}
+              loading="lazy"
+              decoding="async"
               style={{
                 width: "100%",
                 height: "100%",
@@ -426,48 +395,6 @@ function MetaCell({ item, i, total, cols }: {
   );
 }
 
-// What We Did deliverable cell
-function DeliverableCell({ item, i }: {
-  item: { num: string; title: string; desc: string };
-  i: number;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const ready = usePageReady();
-  const inView = useInView(ref, { once: true, amount: 0.25 });
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, x: i % 2 === 0 ? -24 : 24, filter: "blur(8px)" }}
-      animate={inView && ready ? { opacity: 1, x: 0, filter: "blur(0px)" } : {}}
-      transition={{ duration: 0.65, delay: Math.floor(i / 2) * 0.08, ease: [0.22, 1, 0.36, 1] }}
-      style={{
-        padding: "32px 28px",
-        borderBottom: i < 4 ? "1px solid rgba(56,56,56,0.7)" : "none",
-        borderRight: i % 2 === 0 ? "1px solid rgba(56,56,56,0.7)" : "none",
-      }}
-    >
-      <span style={{
-        fontFamily: "var(--font-urbanist), sans-serif", fontSize: 11, fontWeight: 700,
-        color: "#d90cb7", letterSpacing: "1.5px", display: "block", marginBottom: 12,
-      }}>
-        <AnimatedNumber value={item.num} />
-      </span>
-      <h4 style={{
-        fontFamily: "var(--font-urbanist), sans-serif", fontWeight: 600, fontSize: 16,
-        color: "#ffffff", margin: "0 0 10px", lineHeight: 1.3,
-      }}>
-        {item.title}
-      </h4>
-      <p style={{
-        fontFamily: "var(--font-geist), sans-serif", fontWeight: 300, fontSize: 13,
-        lineHeight: 1.75, color: "rgba(255,255,255,0.5)", margin: 0,
-      }}>
-        {item.desc}
-      </p>
-    </motion.div>
-  );
-}
-
 // More Work, "View All Work" button slide-in
 function ViewAllReveal({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -508,6 +435,8 @@ function ParallaxScreenshot({ src, alt }: {
       <motion.img
         src={src}
         alt={alt}
+        loading="lazy"
+        decoding="async"
         style={{
           width:   "100%",
           height:  "auto",
@@ -538,14 +467,7 @@ export default function WorkCasePage({ data }: { data: WorkCaseData }) {
     return () => clearTimeout(t);
   }, []);
 
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 768px)");
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -556,7 +478,6 @@ export default function WorkCasePage({ data }: { data: WorkCaseData }) {
   const navigateWithTransition = (href: string, e: React.MouseEvent) => {
     if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
-    if (href === "/" || href.startsWith("/#")) markSoftNavToHome();
     router.push(href);
   };
 
@@ -884,7 +805,11 @@ export default function WorkCasePage({ data }: { data: WorkCaseData }) {
                 </h2>
               </div>
               <ViewAllReveal>
+                {/* Client-side nav (consistent App Router history → no blank page
+                    on browser Back). href kept for accessibility / fallback. */}
+                {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
                 <a
+                  onClick={(e) => navigateWithTransition("/#work", e)}
                   href="/#work"
                   className="btn-gradient-border"
                   style={{

@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 
 type ServiceCard = {
   label: string;
@@ -199,17 +200,9 @@ function Row({ cards, baseDelay, isMobile, startIndex, registerRef, mobileActive
 }
 
 export default function ServicesSection() {
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [mobileActiveIdx, setMobileActiveIdx] = useState<number | null>(null);
   const allCardRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 768px)");
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
 
   const registerRef = useCallback<RegisterRef>((index, el) => {
     allCardRefs.current[index] = el;
@@ -218,6 +211,9 @@ export default function ServicesSection() {
   // On mobile: pick exactly the card whose center is closest to viewport center
   useEffect(() => {
     if (!isMobile) {
+      // Correct use of an effect: clear the mobile-only active card when leaving
+      // the mobile breakpoint (no-op on desktop, already null).
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMobileActiveIdx(null);
       return;
     }
