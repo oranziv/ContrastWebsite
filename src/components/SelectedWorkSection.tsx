@@ -127,11 +127,6 @@ function PanelLayer({
     el.style.pointerEvents = o > 0.3 ? "auto" : "none";
   });
 
-  // Ken Burns: slow zoom-out across the panel's entire scroll range.
-  // The image breathes from 1.06× down to 1.0× — cinematic feel,
-  // distinct from the vertical-parallax approach used before.
-  const imageScale = useTransform(lsp, [0, 1], [1.06, 1.0]);
-
   // Counter
   const numOpacity = useTransform(
     lsp,
@@ -162,9 +157,7 @@ function PanelLayer({
   const ctaY  = useTransform(lsp, [0, k0c, k0c + REVEAL_DUR, EXIT_START, 1], [20, 20, 0, 0, -8]);
   const ctaOp = useTransform(lsp, [0, k0c, k0c + REVEAL_DUR, EXIT_START, EXIT_START + EXIT_DUR, 1], [0, 0, 1, 1, 0, 0]);
 
-  // ── Mobile: cross-fade + vertical parallax on the image ──────────────────────
-  const imageParallaxY = useTransform(lsp, [0, 1], [0, -60]);
-
+  // ── Mobile: cross-fade only; image is static ─────────────────────────────────
   if (isMobile) {
     return (
       <div
@@ -177,18 +170,14 @@ function PanelLayer({
           overflow: "hidden",
         }}
       >
-        {/* Oversized by ~12% top+bottom so parallax travel never shows edges */}
-        <motion.img
+        <img
           src={project.image}
           alt={project.client}
           style={{
-            position: "absolute",
-            top: "-6%", left: 0,
-            width: "100%", height: "112%",
+            position: "absolute", inset: 0,
+            width: "100%", height: "100%",
             objectFit: "cover", objectPosition: "center",
             display: "block",
-            y: imageParallaxY,
-            willChange: "transform",
             ...(project.imageStyle ?? {}),
           }}
         />
@@ -261,7 +250,7 @@ function PanelLayer({
       ref={wrapperRef}
       style={{ position: "absolute", inset: 0, opacity: index === 0 ? 1 : 0, pointerEvents: index === 0 ? "auto" : "none" }}
     >
-      {/* Full-bleed image — Ken Burns zoom-out while active */}
+      {/* Full-bleed image — static */}
       <a
         href={project.href}
         onClick={handleNavigation}
@@ -269,7 +258,7 @@ function PanelLayer({
         aria-label={`View ${project.client} case study`}
       >
         <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
-          <motion.img
+          <img
             src={project.image}
             alt={project.client}
             style={{
@@ -277,7 +266,6 @@ function PanelLayer({
               width: "100%", height: "100%",
               objectFit: "cover", objectPosition: "center",
               display: "block",
-              scale: imageScale,
               ...(project.imageStyle ?? {}),
             }}
           />
