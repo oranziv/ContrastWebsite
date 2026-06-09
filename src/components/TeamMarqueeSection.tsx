@@ -216,19 +216,6 @@ export default function TeamMarqueeSection() {
             display: none !important;
           }
         }
-        @keyframes marquee-left {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        @keyframes marquee-right {
-          0%   { transform: translateX(-50%); }
-          100% { transform: translateX(0); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          [style*="marquee-left"], [style*="marquee-right"] {
-            animation: none !important;
-          }
-        }
       `}</style>
     </>
   );

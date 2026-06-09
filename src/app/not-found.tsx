@@ -86,7 +86,6 @@ export default function NotFound() {
   const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 });
   const [glitching, setGlitching] = useState(false);
   const [slices, setSlices] = useState<GlitchSlice[]>([]);
-  const [hoverGlitch, setHoverGlitch] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Mouse tracking
@@ -111,7 +110,6 @@ export default function NotFound() {
 
   const endGlitch = () => {
     setGlitching(false);
-    setHoverGlitch(false);
     setSlices([]);
   };
 
@@ -135,7 +133,6 @@ export default function NotFound() {
   const handleHoverGlitch = () => {
     if (glitching) return;
     triggerGlitch();
-    setHoverGlitch(true);
     setTimeout(endGlitch, 180);
   };
 
