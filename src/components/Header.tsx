@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import Logotype from "./Logotype";
 import { setLogoOrigin, shouldSkipIntro } from "@/lib/introState";
+import { scrollToElement } from "@/lib/smoothScroll";
 
 const navLinks = [
   { label: "The Hero Framework", href: "/#framework" },
@@ -29,7 +30,7 @@ export function handleNavClick(
     const el = document.getElementById(hash);
     if (el) {
       e.preventDefault();
-      el.scrollIntoView({ behavior: "smooth" });
+      scrollToElement(el);
       return;
     }
   }

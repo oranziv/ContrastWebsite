@@ -1,41 +1,34 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import HeroBackground from "./HeroBackground";
 
 export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
-  const [scrollY, setScrollY] = useState(0);
 
-  useEffect(() => {
-    const onScroll = () => {
-      if (sectionRef.current) {
-        const rect = sectionRef.current.getBoundingClientRect();
-        const sectionH = sectionRef.current.offsetHeight;
-        // 0 when top of section is at top of viewport, 1 when fully scrolled past
-        const progress = Math.max(0, -rect.top / sectionH);
-        setScrollY(progress);
-      }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  // Scroll-driven parallax via motion values — these update transforms off the
+  // React render path, so the Hero does NOT re-render on every scroll frame
+  // (the previous setState-on-scroll re-rendered the whole subtree page-wide).
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
 
-  // Parallax speeds, higher = moves faster on scroll
-  const bgY = scrollY * 500;           // background moves slowest
-  const headingY = scrollY * 900;      // heading moves medium
-  const subtitleY = scrollY * 1100;    // subtitle moves a bit faster
-  const ctaY = scrollY * 1300;         // CTA moves fastest
-  const scrollIndY = scrollY * 1500;
-
-  // Fade out as user scrolls
-  const fadeOut = Math.max(0, 1 - scrollY * 3.5);
+  // Negative = moves up; faster values for foreground layers.
+  const bgY        = useTransform(scrollYProgress, [0, 1], [0, -500]);
+  const headingY   = useTransform(scrollYProgress, [0, 1], [0, -900]);
+  const subtitleY  = useTransform(scrollYProgress, [0, 1], [0, -1100]);
+  const ctaY       = useTransform(scrollYProgress, [0, 1], [0, -1300]);
+  const scrollIndY = useTransform(scrollYProgress, [0, 1], [0, -1500]);
+  const fadeOut    = useTransform(scrollYProgress, [0, 0.2857], [1, 0]); // was 1 - p*3.5
+  const indFade    = useTransform(scrollYProgress, [0, 0.2], [1, 0]);    // was 1 - p*5
 
   return (
     <>
     <section
       ref={sectionRef}
+      className="hero-section"
       style={{
         position: "relative",
         display: "flex",
@@ -48,179 +41,197 @@ export default function Hero() {
       }}
     >
       {/* Background with slowest parallax */}
-      <div
+      <motion.div
         style={{
           position: "absolute",
           inset: 0,
-          transform: `translateY(-${bgY}px)`,
+          y: bgY,
           willChange: "transform",
         }}
       >
         <HeroBackground />
-      </div>
+      </motion.div>
 
-      {/* Heading */}
-      <motion.h1
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.9, delay: 3.9, ease: "easeOut" }}
-        className="hero-heading"
+      {/* Heading — scroll parallax on wrapper, entrance on inner */}
+      <motion.div
         style={{
-          position: "relative",
-          zIndex: 1,
-          maxWidth: 900,
-          textAlign: "center",
-          fontWeight: 600,
-          lineHeight: 1.08,
-          letterSpacing: "-0.02em",
-          color: "#ffffff",
-          fontSize: "clamp(38px, 5.5vw, 78px)",
-          transform: `translateY(-${headingY}px)`,
-          opacity: fadeOut,
-          willChange: "transform, opacity",
+          position: "relative", zIndex: 1, width: "100%",
+          display: "flex", justifyContent: "center",
+          y: headingY, opacity: fadeOut, willChange: "transform, opacity",
         }}
       >
-        AI Can Generate a Design.{" "}
-        <br className="title-br" />
-        It Can&apos;t Tell You If It&apos;s the{" "}
-        <br className="title-br" />
-        Right One.
-      </motion.h1>
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 3.9, ease: "easeOut" }}
+          className="hero-heading"
+          style={{
+            maxWidth: 900,
+            textAlign: "center",
+            fontWeight: 600,
+            lineHeight: 1.08,
+            letterSpacing: "-0.02em",
+            color: "#ffffff",
+            fontSize: "clamp(38px, 5.5vw, 78px)",
+            margin: 0,
+          }}
+        >
+          AI Can Generate a Design.{" "}
+          <br className="title-br" />
+          It Can&apos;t Tell You If It&apos;s the{" "}
+          <br className="title-br" />
+          Right One.
+        </motion.h1>
+      </motion.div>
 
       {/* Subtitle */}
-      <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.9, delay: 4.1, ease: "easeOut" }}
-        className="hero-subtitle"
+      <motion.div
         style={{
-          position: "relative",
-          zIndex: 1,
-          marginTop: 36,
-          maxWidth: "35em",
-          textAlign: "center",
-          fontSize: "clamp(0.875rem, 1.25vw, 1.25rem)",
-          lineHeight: "1.5em",
-          fontWeight: 300,
-          fontFamily: "var(--font-geist), sans-serif",
-          color: "#ffffff",
-          transform: `translateY(-${subtitleY}px)`,
-          opacity: fadeOut,
-          willChange: "transform, opacity",
+          position: "relative", zIndex: 1, width: "100%", marginTop: 36,
+          display: "flex", justifyContent: "center",
+          y: subtitleY, opacity: fadeOut, willChange: "transform, opacity",
         }}
       >
-        Any team can use AI tools to create. The difference is knowing what to build,
-        why it works, and how to turn it into outcomes.
-        <br />
-        That&apos;s not a tool. That&apos;s what we do.
-      </motion.p>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 4.1, ease: "easeOut" }}
+          className="hero-subtitle"
+          style={{
+            maxWidth: "35em",
+            textAlign: "center",
+            fontSize: "clamp(0.875rem, 1.25vw, 1.25rem)",
+            lineHeight: "1.5em",
+            fontWeight: 300,
+            fontFamily: "var(--font-geist), sans-serif",
+            color: "#ffffff",
+            margin: 0,
+          }}
+        >
+          Any team can use AI tools to create. The difference is knowing what to build,
+          why it works, and how to turn it into outcomes.
+          <br />
+          That&apos;s not a tool. That&apos;s what we do.
+        </motion.p>
+      </motion.div>
 
       {/* CTA Button */}
-      <motion.a
-        href="https://tidycal.com/sagishrieber/strategy-call"
-        target="_blank"
-        rel="noopener noreferrer"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        whileHover={{
-          backgroundColor: "rgba(217, 12, 183, 0.12)",
-          borderColor: "#d90cb7",
-          boxShadow: "0px 6px 32px -8px rgba(217, 12, 183, 0.35)",
-        }}
-        transition={{
-          duration: 0.9,
-          delay: 4.3,
-          ease: "easeOut",
-          backgroundColor: { duration: 0.3, ease: "easeOut", delay: 0 },
-          borderColor: { duration: 0.3, ease: "easeOut", delay: 0 },
-          boxShadow: { duration: 0.3, ease: "easeOut", delay: 0 },
-        }}
+      <motion.div
         style={{
-          position: "relative",
-          zIndex: 1,
-          marginTop: 40,
-          display: "flex",
-          alignItems: "center",
-          gap: 4,
-          borderRadius: 9999,
-          borderWidth: 1,
-          borderStyle: "solid",
-          borderColor: "rgba(255, 255, 255, 0.24)",
-          backgroundColor: "rgba(10, 10, 10, 0.01)",
-          padding: "11px 26px",
-          fontSize: 14,
-          fontWeight: 600,
-          color: "#ffffff",
-          textDecoration: "none",
-          transform: `translateY(-${ctaY}px)`,
-          opacity: fadeOut,
-          willChange: "transform, opacity",
+          position: "relative", zIndex: 1, marginTop: 40,
+          display: "flex", justifyContent: "center",
+          y: ctaY, opacity: fadeOut, willChange: "transform, opacity",
         }}
       >
-        Book a call
-        <svg
-          width="15"
-          height="15"
-          viewBox="0 0 14 14"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+        <motion.a
+          href="https://tidycal.com/sagishrieber/strategy-call"
+          target="_blank"
+          rel="noopener noreferrer"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          whileHover={{
+            backgroundColor: "rgba(217, 12, 183, 0.12)",
+            borderColor: "#d90cb7",
+            boxShadow: "0px 6px 32px -8px rgba(217, 12, 183, 0.35)",
+          }}
+          transition={{
+            duration: 0.9,
+            delay: 4.3,
+            ease: "easeOut",
+            backgroundColor: { duration: 0.3, ease: "easeOut", delay: 0 },
+            borderColor: { duration: 0.3, ease: "easeOut", delay: 0 },
+            boxShadow: { duration: 0.3, ease: "easeOut", delay: 0 },
+          }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            borderRadius: 9999,
+            borderWidth: 1,
+            borderStyle: "solid",
+            borderColor: "rgba(255, 255, 255, 0.24)",
+            backgroundColor: "rgba(10, 10, 10, 0.01)",
+            padding: "11px 26px",
+            fontSize: 14,
+            fontWeight: 600,
+            color: "#ffffff",
+            textDecoration: "none",
+          }}
         >
-          <path
-            d="M3.5 10.5L10.5 3.5M10.5 3.5H4.5M10.5 3.5V9.5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </motion.a>
+          Book a call
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 14 14"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3.5 10.5L10.5 3.5M10.5 3.5H4.5M10.5 3.5V9.5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </motion.a>
+      </motion.div>
 
       {/* Scroll Down Indicator */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: Math.max(0, 1 - scrollY * 5) }}
-        transition={{ duration: scrollY > 0 ? 0 : 0.8, delay: scrollY > 0 ? 0 : 4.5 }}
-        className="hero-scroll-indicator"
         style={{
           position: "absolute",
           zIndex: 1,
           bottom: 40,
+          left: 0, right: 0,
           display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 4,
-          transform: `translateY(-${scrollIndY}px)`,
+          justifyContent: "center",
+          y: scrollIndY,
+          opacity: indFade,
           willChange: "transform, opacity",
         }}
       >
-        <span
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 4.5 }}
+          className="hero-scroll-indicator"
           style={{
-            fontSize: 11,
-            fontWeight: 500,
-            letterSpacing: "0.25em",
-            textTransform: "uppercase" as const,
-            color: "rgba(255, 255, 255, 0.5)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 4,
           }}
         >
-          Scroll down
-        </span>
-        <motion.svg
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-          width="14"
-          height="14"
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M8 3V13M8 13L3 8M8 13L13 8"
-            stroke="rgba(255, 255, 255, 0.5)"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </motion.svg>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: "0.25em",
+              textTransform: "uppercase" as const,
+              color: "rgba(255, 255, 255, 0.5)",
+            }}
+          >
+            Scroll down
+          </span>
+          <motion.svg
+            animate={{ y: [0, 6, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M8 3V13M8 13L3 8M8 13L13 8"
+              stroke="rgba(255, 255, 255, 0.5)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </motion.svg>
+        </motion.div>
       </motion.div>
     </section>
 
@@ -230,7 +241,10 @@ export default function Hero() {
 
       @media (max-width: 768px) {
         .title-br { display: none; }
-        .hero-scroll-indicator { bottom: 140px !important; }
+        .hero-scroll-indicator { bottom: 90px !important; }
+        /* Trim the full-height hero on mobile so the marquee sits closer to the
+           content instead of after a large empty gap. */
+        .hero-section { min-height: 82vh !important; }
       }
     `}</style>
     </>

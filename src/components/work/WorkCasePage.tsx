@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import CtaBanner from "@/components/CtaBanner";
 import Footer from "@/components/Footer";
 import { markIntroPlayed } from "@/lib/introState";
+import { scrollToTop } from "@/lib/smoothScroll";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -419,9 +420,10 @@ function ViewAllReveal({ children }: { children: React.ReactNode }) {
 // overflow that the container clips. The ±30px parallax y-shift stays inside
 // that buffer so no edge gaps are ever visible.
 
-function ParallaxScreenshot({ src, alt }: {
+function ParallaxScreenshot({ src, alt, isMobile }: {
   src: string;
   alt: string;
+  isMobile: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -429,6 +431,24 @@ function ParallaxScreenshot({ src, alt }: {
     offset: ["start end", "end start"],
   });
   const y = useTransform(scrollYProgress, [0, 1], [-30, 30]);
+
+  // Mobile: plain static image — no transform, no scroll subscription. A
+  // lazy-loaded *transformed* image inside a height:auto / overflow:hidden box
+  // fails to paint on mobile browsers (the container collapses to 0px before the
+  // image loads and never recovers), which made the body screenshots vanish.
+  if (isMobile) {
+    return (
+      <div style={{ overflow: "hidden", borderRadius: 16 }}>
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          style={{ width: "100%", height: "auto", display: "block" }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div ref={ref} style={{ overflow: "hidden", borderRadius: 16 }}>
@@ -470,7 +490,7 @@ export default function WorkCasePage({ data }: { data: WorkCaseData }) {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   useLayoutEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
+    scrollToTop(true);
   }, []);
 
   const metaCols = data.metaItems.length === 3 ? 3 : 2;
@@ -765,6 +785,7 @@ export default function WorkCasePage({ data }: { data: WorkCaseData }) {
                 key={item.src}
                 src={item.src}
                 alt={item.alt}
+                isMobile={isMobile}
               />
             ))}
           </div>

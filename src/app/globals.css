@@ -24,6 +24,22 @@ html {
   overflow-x: clip; /* clip (not hidden) — prevents horizontal overflow without creating a scroll container, so position:sticky still works */
 }
 
+/* Lenis smooth scrolling — when active, hand scroll control to Lenis and disable
+   the native CSS smooth behaviour so the two don't fight. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -114,6 +130,26 @@ body {
   [style*="marquee-left"],
   [style*="marquee-right"] {
     animation: none !important;
+  }
+}
+
+/* ── Mobile: tighten the oversized section spacing ─────────────────────────── */
+/* Several sections kept large desktop vertical padding on mobile; bring the big
+   ones down so the gaps between sections aren't excessive. The `body` prefix
+   raises specificity so these win over the inline padding. Sections already
+   reduced (Method, Testimonials) are left as-is. */
+@media (max-width: 768px) {
+  body #services,
+  body #contact,
+  body .success-section {
+    padding-top: 72px !important;
+    padding-bottom: 72px !important;
+  }
+  body .who-we-serve-section {
+    padding-top: 72px !important;
+  }
+  body .team-section {
+    padding-bottom: 72px !important;
   }
 }
 

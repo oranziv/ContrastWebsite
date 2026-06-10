@@ -3,6 +3,7 @@
 import { useState, useLayoutEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { setDotOrigin, shouldSkipIntro, clearSoftNavFlag, markIntroPlayed } from "@/lib/introState";
+import { getLenis } from "@/lib/smoothScroll";
 
 // ── Logo vectors, identical to Logotype.tsx ──────────────────────────────────
 const VECTORS = [
@@ -61,6 +62,7 @@ export default function IntroAnimation() {
 
     markIntroPlayed();
     document.body.style.overflow = "hidden";
+    getLenis()?.stop(); // lock Lenis too — body overflow alone won't stop it
 
     const T: ReturnType<typeof setTimeout>[] = [];
 
@@ -90,6 +92,7 @@ export default function IntroAnimation() {
     // Unmount + unlock scroll
     T.push(setTimeout(() => {
       document.body.style.overflow = "";
+      getLenis()?.start();
       setShow(false);
     }, DONE_MS));
 
@@ -101,6 +104,7 @@ export default function IntroAnimation() {
       // Intro now also plays on client-side navs to home; if the user navigates
       // away mid-intro, make sure scroll is never left locked.
       document.body.style.overflow = "";
+      getLenis()?.start();
     };
   }, []);
 
