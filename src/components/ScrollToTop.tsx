@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { scrollToTop, scrollToElement } from "@/lib/smoothScroll";
 
 export default function ScrollToTop() {
   useEffect(() => {
@@ -16,14 +17,14 @@ export default function ScrollToTop() {
       const tryScroll = () => {
         const el = document.getElementById(id);
         if (el) {
-          el.scrollIntoView({ behavior: "instant" });
+          scrollToElement(el, true);
         } else if (attempts++ < 20) {
           setTimeout(tryScroll, 80);
         }
       };
       tryScroll();
     } else {
-      window.scrollTo(0, 0);
+      scrollToTop(true);
     }
   }, []);
 

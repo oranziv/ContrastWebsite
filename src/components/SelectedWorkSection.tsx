@@ -110,15 +110,12 @@ function Panel({
   const ref = useRef<HTMLDivElement>(null);
 
   // 0 → panel's top hits the viewport bottom; 1 → its bottom leaves the top.
+  // Driven by Lenis (synced to Framer's frame loop) so it tracks the smoothed
+  // scroll position.
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
   });
-
-  // Image drifts upward; oversized (top -26% / height 152%) so the ±120px travel
-  // keeps a comfortable margin even at the 560px mobile floor and never exposes an
-  // edge. Text/button move a bit more for a foreground feel — the gap between the
-  // two layers is what reads as depth.
   const imageY = useTransform(scrollYProgress, [0, 1], [120, -120]);
   const textY = useTransform(scrollYProgress, [0, 1], [160, -160]);
 
@@ -128,6 +125,25 @@ function Panel({
     router.push(project.href, { scroll: false });
   };
 
+  // Mobile: static full-bleed image — scroll parallax is too heavy for mobile GPUs.
+  const StaticImage = (
+    <img
+      src={project.image}
+      alt={project.client}
+      loading="lazy"
+      decoding="async"
+      style={{
+        position: "absolute", inset: 0,
+        width: "100%", height: "100%",
+        objectFit: "cover", objectPosition: "center",
+        display: "block",
+        ...(project.imageStyle ?? {}),
+      }}
+    />
+  );
+
+  // Desktop: oversized (top -26% / height 152%) so the ±120px parallax drift never
+  // exposes an edge. Promoted to its own GPU layer for compositing.
   const ParallaxImage = (
     <motion.img
       src={project.image}
@@ -149,11 +165,11 @@ function Panel({
     />
   );
 
-  // ── Mobile: full-bleed image, text revealed + parallaxed at the bottom ──────
+  // ── Mobile: static full-bleed image, text reveal on enter ──────────────────
   if (isMobile) {
     return (
       <div ref={ref} style={{ position: "relative", height: "100svh", minHeight: 560, overflow: "hidden" }}>
-        {ParallaxImage}
+        {StaticImage}
         <div style={{
           position: "absolute", inset: 0,
           background: "linear-gradient(to top, rgba(10,10,10,0.97) 0%, rgba(10,10,10,0.82) 32%, rgba(10,10,10,0.45) 56%, transparent 76%)",
@@ -165,7 +181,7 @@ function Panel({
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, amount: 0.3 }}
-          style={{ position: "absolute", left: 24, right: 24, bottom: 36, zIndex: 5, y: textY }}
+          style={{ position: "absolute", left: 24, right: 24, bottom: 36, zIndex: 5 }}
         >
           <motion.div variants={revealItem} style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
             {project.highlights.map((h) => (
@@ -224,10 +240,10 @@ function Panel({
     );
   }
 
-  // ── Desktop: full-bleed image, text revealed + parallaxed on the left ───────
+  // ── Desktop: full-bleed image with scroll parallax, text revealed on the left ─
   return (
     <div ref={ref} style={{ position: "relative", height: "100vh", minHeight: 600, overflow: "hidden" }}>
-      {/* Full-bleed image — static layout, parallax drift, clickable */}
+      {/* Full-bleed image — parallax drift, clickable */}
       <a
         href={project.href}
         onClick={handleNavigation}

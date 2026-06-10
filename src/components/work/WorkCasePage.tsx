@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import CtaBanner from "@/components/CtaBanner";
 import Footer from "@/components/Footer";
 import { markIntroPlayed } from "@/lib/introState";
+import { scrollToTop } from "@/lib/smoothScroll";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -470,7 +471,7 @@ export default function WorkCasePage({ data }: { data: WorkCaseData }) {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   useLayoutEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
+    scrollToTop(true);
   }, []);
 
   const metaCols = data.metaItems.length === 3 ? 3 : 2;

@@ -212,7 +212,7 @@ function StatCard({ stat, delay }: { stat: Stat; delay: number }) {
 
 export default function SuccessStoriesSection() {
   return (
-    <section style={{ padding: "120px 40px", background: "#0a0a0a" }}>
+    <section className="success-section" style={{ padding: "120px 40px", background: "#0a0a0a" }}>
       <div style={{ maxWidth: 1360, margin: "0 auto" }}>
         {/* Header */}
         <motion.div

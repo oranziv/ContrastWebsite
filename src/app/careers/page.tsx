@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { scrollToTop } from "@/lib/smoothScroll";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -456,9 +457,10 @@ function RoleCard({ role, i }: { role: typeof roles[0]; i: number }) {
 export default function CareersPage() {
   // Scroll handling is set to "manual" globally (ScrollToTop), so client-side
   // navigations don't auto-scroll. Reset to the top before paint — same as the
-  // work case pages — so arriving here never lands mid-page.
+  // work case pages — so arriving here never lands mid-page. Routed through Lenis
+  // so smooth scrolling doesn't drift it back.
   useLayoutEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
+    scrollToTop(true);
   }, []);
 
   return (
