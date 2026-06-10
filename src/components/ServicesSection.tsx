@@ -300,6 +300,9 @@ export default function ServicesSection() {
 
     <style jsx global>{`
       @media (max-width: 768px) {
+        #services {
+          padding: 48px 20px !important;
+        }
         .services-row {
           flex-direction: column !important;
         }

@@ -625,7 +625,7 @@ export default function WhoWeServe() {
       <style jsx global>{`
         @media (max-width: 900px) {
           .who-we-serve-section {
-            padding: 80px 20px 40px !important;
+            padding: 48px 20px 32px !important;
           }
           .who-row {
             flex-direction: column !important;

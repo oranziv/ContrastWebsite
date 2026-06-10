@@ -388,10 +388,10 @@ export default function SelectedWorkSection() {
 
       <style jsx global>{`
         @media (max-width: 768px) {
-          .selected-work-spacer { height: 60px !important; }
+          .selected-work-spacer { height: 40px !important; }
         }
         @media (max-width: 640px) {
-          .selected-work-outer { padding: 60px 20px 40px !important; }
+          .selected-work-outer { padding: 48px 20px 32px !important; }
           #work { padding-left: 0 !important; padding-right: 0 !important; }
         }
       `}</style>

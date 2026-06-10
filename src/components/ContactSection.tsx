@@ -73,6 +73,7 @@ export default function ContactSection() {
 
       <style jsx global>{`
         @media (max-width: 768px) {
+          #contact { min-height: auto !important; padding-top: 48px !important; padding-bottom: 48px !important; }
           .contact-wrapper { width: 100% !important; }
           .contact-heading { width: 100% !important; }
         }

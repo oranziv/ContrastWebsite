@@ -254,6 +254,9 @@ export default function SuccessStoriesSection() {
             grid-template-columns: 1fr !important;
           }
         }
+        @media (max-width: 768px) {
+          .success-section { padding: 48px 20px !important; }
+        }
       `}</style>
     </section>
   );

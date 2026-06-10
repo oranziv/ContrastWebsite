@@ -218,6 +218,7 @@ function CyclingHeadline() {
 export default function CtaBanner() {
   return (
     <section
+      className="cta-banner-section"
       style={{
         position: "relative",
         width: "100%",
@@ -299,6 +300,10 @@ export default function CtaBanner() {
 
 <style jsx global>{`
         @media (max-width: 768px) {
+          .cta-banner-section {
+            padding-top: 56px !important;
+            padding-bottom: 72px !important;
+          }
           .cta-label {
             font-size: 22px !important;
             letter-spacing: 7.2px !important;

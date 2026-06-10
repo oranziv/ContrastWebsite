@@ -589,7 +589,7 @@ export default function MethodSection() {
         }
 
         @media (max-width: 768px) {
-          .method-section { padding: 80px 20px !important; }
+          .method-section { padding: 48px 20px !important; }
           .method-cards { grid-template-columns: 1fr !important; }
           .method-card-illus { height: 220px !important; }
           .method-video-card {

@@ -204,7 +204,7 @@ export default function TeamMarqueeSection() {
 
       <style jsx global>{`
         @media (max-width: 768px) {
-          .team-section { padding-top: 60px !important; }
+          .team-section { padding-top: 48px !important; padding-bottom: 64px !important; }
           .team-photo-card {
             transform: none !important;
             transition: none !important;

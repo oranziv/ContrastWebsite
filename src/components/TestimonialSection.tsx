@@ -244,7 +244,7 @@ export default function TestimonialSection() {
       </div>
       <style jsx global>{`
         @media (max-width: 768px) {
-          .testimonial-section { padding-top: 60px !important; padding-bottom: 60px !important; }
+          .testimonial-section { padding-top: 48px !important; padding-bottom: 48px !important; }
           .testimonial-author-row {
             flex-direction: column !important;
             align-items: flex-start !important;
