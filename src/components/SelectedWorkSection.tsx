@@ -343,7 +343,11 @@ function Panel({
 }
 
 export default function SelectedWorkSection() {
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  // Any touch device uses the static path — the full-bleed parallax is too heavy
+  // for mobile GPUs and stutters. Gate on pointer type (not just width) so phones
+  // in landscape (CSS width > 768px) and tablets also stay static, not just narrow
+  // portrait phones.
+  const isMobile = useMediaQuery("(max-width: 768px), (pointer: coarse)");
 
   const N = projects.length;
 
