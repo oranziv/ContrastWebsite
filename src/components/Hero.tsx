@@ -242,9 +242,10 @@ export default function Hero() {
       @media (max-width: 768px) {
         .title-br { display: none; }
         .hero-scroll-indicator { bottom: 90px !important; }
-        /* Trim the full-height hero on mobile so the marquee sits closer to the
-           content instead of after a large empty gap. */
-        .hero-section { min-height: 82vh !important; }
+        /* Fill the visible viewport on mobile so the marquee underneath stays
+           below the fold until the user scrolls. svh accounts for the mobile
+           address bar so the full hero content (incl. CTA) stays in view. */
+        .hero-section { min-height: 100svh !important; }
       }
     `}</style>
     </>
